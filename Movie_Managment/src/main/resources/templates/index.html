@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Movies</title>
+    <script>
+        function searchMovies() {
+            const query = document.getElementById('searchQuery').value;
+            fetch(`http://localhost:8080/movies/search?query=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    const movieList = document.getElementById('movieList');
+                    movieList.innerHTML = '';
+
+                    data.forEach(movie => {
+                        const movieItem = document.createElement('li');
+                        movieItem.innerText = `${movie.title} (${movie.year}) - ${movie.genre} - ${movie.director}`;
+                        movieList.appendChild(movieItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    </script>
+</head>
+<body>
+<div>
+    <h1>Search for Movies</h1>
+    <input type="text" id="searchQuery" placeholder="Enter movie title" />
+    <button onclick="searchMovies()">Search</button>
+
+    <ul id="movieList">
+        <!-- Movie results will be displayed here -->
+    </ul>
+</div>
+</body>
+</html>
