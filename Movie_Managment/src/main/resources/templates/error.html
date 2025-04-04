@@ -1,0 +1,19 @@
+<!-- src/main/resources/templates/error.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Error</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header>
+    <h1>Error</h1>
+</header>
+
+<div class="error-container">
+    <p th:text="${errorMessage}">An error occurred</p>
+    <a th:href="@{/}">Return to Home</a>
+</div>
+</body>
+</html>

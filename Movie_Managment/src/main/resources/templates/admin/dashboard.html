@@ -1,0 +1,69 @@
+<!-- src/main/resources/templates/admin/dashboard.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header>
+    <h1>Admin Dashboard</h1>
+    <a th:href="@{/logout}">Logout</a>
+</header>
+
+<div class="search-container">
+    <form th:action="@{/admin/dashboard}" method="get">
+        <input type="text" name="search" th:value="${search}" placeholder="Search movies...">
+        <button type="submit">Search</button>
+    </form>
+</div>
+
+<div class="movie-list">
+    <div class="movie-grid">
+        <div class="movie-card" th:each="movie : ${movies}">
+            <img th:src="${movie.poster}" alt="Movie Poster" onerror="this.src='/images/no-poster.jpg'">
+            <h3 th:text="${movie.title}"></h3>
+            <p th:text="${movie.year}"></p>
+
+            <div class="movie-actions">
+                <form th:action="@{/admin/movies/save}" method="post">
+                    <input type="hidden" name="imdbId" th:value="${movie.imdbId}">
+                    <button type="submit">Save</button>
+                </form>
+                <form th:action="@{/admin/movies/remove}" method="post">
+                    <input type="hidden" name="imdbId" th:value="${movie.imdbId}">
+                    <button type="submit">Remove</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="pagination">
+            <span th:if="${currentPage > 1}">
+                <a th:href="@{/admin/dashboard(search=${search}, page=${currentPage - 1}, size=${movies.size})}">Previous</a>
+            </span>
+
+        <span th:each="i : ${#numbers.sequence(1, totalPages)}">
+                <a th:if="${i != currentPage}" th:href="@{/admin/dashboard(search=${search}, page=${i}, size=${movies.size})}" th:text="${i}"></a>
+                <span th:unless="${i != currentPage}" th:text="${i}"></span>
+            </span>
+
+        <span th:if="${currentPage < totalPages}">
+                <a th:href="@{/admin/dashboard(search=${search}, page=${currentPage + 1}, size=${movies.size})}">Next</a>
+            </span>
+    </div>
+</div>
+
+<div class="batch-actions">
+    <form th:action="@{/admin/movies/batch-save}" method="post">
+        <input type="text" name="imdbIds" placeholder="Enter comma-separated IMDb IDs">
+        <button type="submit">Batch Save</button>
+    </form>
+    <form th:action="@{/admin/movies/batch-remove}" method="post">
+        <input type="text" name="imdbIds" placeholder="Enter comma-separated IMDb IDs">
+        <button type="submit">Batch Remove</button>
+    </form>
+</div>
+</body>
+</html>

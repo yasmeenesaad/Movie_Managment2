@@ -1,143 +1,183 @@
 package org.example.movie_managment.service.impl;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.movie_managment.dto.MovieDTO;
-import org.example.movie_managment.dto.MovieResponse;
+import org.example.movie_managment.dto.MovieDto;
+import org.example.movie_managment.dto.RatingDto;
 import org.example.movie_managment.exception.ResourceNotFoundException;
 import org.example.movie_managment.mapper.MovieMapper;
 import org.example.movie_managment.model.Movie;
+import org.example.movie_managment.model.User;
+import org.example.movie_managment.model.UserRating;
 import org.example.movie_managment.repository.MovieRepository;
+import org.example.movie_managment.repository.UserRatingRepository;
+import org.example.movie_managment.repository.UserRepository;
 import org.example.movie_managment.service.MovieService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.example.movie_managment.service.omdb.OmdbService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 public class MovieServiceImpl implements MovieService {
-    @Value("${omdb.api.key}")
-    private String apiKey;
 
-    private RestTemplate restTemplate;
+    private final MovieRepository movieRepository;
+    private final OmdbService omdbService;
+    private final MovieMapper movieMapper;
+    private final UserRepository userRepository;
+    private final UserRatingRepository userRatingRepository;
 
-    @Autowired
-    private MovieRepository movieRepository;
-
-    @Autowired
-    private MovieMapper movieMapper;
-
-    public MovieServiceImpl(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
-
-
-    @Override
-    public List<MovieDTO> getAllMovies() {
-        return movieRepository.findAll().stream()
-                .map(movieMapper::movieToMovieDTO)
-                .collect(Collectors.toList());
+    public MovieServiceImpl(MovieRepository movieRepository,
+                            OmdbService omdbService,
+                            MovieMapper movieMapper,
+                            UserRepository userRepository,
+                            UserRatingRepository userRatingRepository) {
+        this.movieRepository = movieRepository;
+        this.omdbService = omdbService;
+        this.movieMapper = movieMapper;
+        this.userRepository = userRepository;
+        this.userRatingRepository = userRatingRepository;
     }
 
     @Override
-    public MovieDTO getMovieById(Long id) {
-        Movie movie = movieRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Movie not found with id " + id)); // Custom exception
-        return movieMapper.movieToMovieDTO(movie);
+    public Page<MovieDto> searchMovies(String query, Pageable pageable) {
+        return omdbService.searchMovies(query, pageable);
     }
 
     @Override
-    public MovieDTO addMovie(MovieDTO movieDTO) {
-        Movie movie = movieMapper.movieDTOToMovie(movieDTO);
-        Movie savedMovie = movieRepository.save(movie);
-        return movieMapper.movieToMovieDTO(savedMovie);
-    }
-
-    @Override
-    public void removeMovie(Long id) {
-        movieRepository.deleteById(id);
-    }
-
-//    @Override
-//    public List<MovieDTO> searchMovies(String query) {
-//        // Implement OMDB API integration here
-//        // This is just a mock for search functionality
-//        return movieRepository.findByTitleContaining(query).stream()
-//                .map(movieMapper::movieToMovieDTO)
-//                .collect(Collectors.toList());
-//    }
-
-    public List<MovieDTO> getMoviesBySearch(String query) {
-        String url = UriComponentsBuilder.fromHttpUrl("http://www.omdbapi.com/")
-                .queryParam("i","tt3896198")
-                .queryParam("apikey", apiKey)
-                .queryParam("s", query)
-                .toUriString();
-
-        // Fetch the data from the OMDB API
-        MovieResponse movieResponse = restTemplate.getForObject(url, MovieResponse.class);
-
-        // Return the list of movies from the response
-        if (movieResponse != null && movieResponse.getSearch() != null) {
-            return Arrays.asList(movieResponse.getSearch());
-        }
-        return null;
-    }
-
-    @Override
-    public void removeMovie_IMD(String imdbId) {
-        Movie movie = movieRepository.findByImdbId(imdbId)
+    public MovieDto getMovieDetails(String imdbId) {
+        Movie movie = movieRepository.findById(imdbId)
                 .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
-        movieRepository.delete(movie);
+        MovieDto dto = movieMapper.toDto(movie);
+        dto.setAverageRating(getAverageRating(imdbId));
+        dto.setUserRating(getUserRating(imdbId));
+        return dto;
     }
 
-    @Value("${omdb.api.key}")
-    private String omdbApiKey;
-
-    private static final String OMDB_API_URL = "http://www.omdbapi.com/";
-//    http://www.omdbapi.com/?i=tt3896198&apikey=1d56bb56
     @Override
-    public List<MovieDTO> searchMovies(String query) {
-        String url = OMDB_API_URL +"?i=tt3896198"+ "?&apikey=" + omdbApiKey + "&s=" + query;
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
-        String responseBody = response.getBody();
-
-        // Parse the JSON response and convert it to a list of MovieDTO objects
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode jsonNode = null;
-        try {
-            jsonNode = objectMapper.readTree(responseBody);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+    @Transactional
+    public void saveMovie(String imdbId) {
+        if (!movieRepository.existsById(imdbId)) {
+            MovieDto movieDto = omdbService.getMovieDetails(imdbId);
+            Movie movie = movieMapper.toEntity(movieDto);
+            movieRepository.save(movie);
         }
+    }
 
-        List<MovieDTO> movieList = new ArrayList<>();
-        if (jsonNode.has("Search")) {
-            for (JsonNode movieNode : jsonNode.get("Search")) {
-                MovieDTO movie = new MovieDTO();
-                movie.setTitle(movieNode.get("Title").asText());
-                movie.setYear(movieNode.get("Year").asText());
-                movie.setGenre(movieNode.get("Genre").asText());
-                movie.setDirector(movieNode.get("Director").asText());
-                movie.setPoster(movieNode.get("Poster").asText());
-                movieList.add(movie);
+    @Override
+    @Transactional
+    public void removeMovie(String imdbId) {
+        movieRepository.deleteById(imdbId);
+    }
 
+    @Override
+    @Transactional
+    public void batchSaveMovies(List<String> imdbIds) {
+        List<String> existingIds = movieRepository.findByImdbIdIn(imdbIds)
+                .stream()
+                .map(Movie::getImdbId)
+                .collect(Collectors.toList());
+
+        List<String> newIds = imdbIds.stream()
+                .filter(id -> !existingIds.contains(id))
+                .collect(Collectors.toList());
+
+        if (!newIds.isEmpty()) {
+            List<MovieDto> movieDtos = omdbService.getMovieDetailsBatch(newIds);
+            List<Movie> movies = movieDtos.stream()
+                    .map(movieMapper::toEntity)
+                    .collect(Collectors.toList());
+            movieRepository.saveAll(movies);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void batchRemoveMovies(List<String> imdbIds) {
+        movieRepository.deleteAllById(imdbIds);
+    }
+
+    @Override
+    @Transactional
+    public void rateMovie(RatingDto ratingDto) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Movie movie = movieRepository.findById(ratingDto.getImdbId())
+                .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
+
+        Optional<UserRating> existingRating = userRatingRepository.findByUserAndMovie(user, movie);
+
+        if (existingRating.isPresent()) {
+            UserRating rating = existingRating.get();
+            if (ratingDto.getRating() == null) {
+                userRatingRepository.delete(rating);
+            } else {
+                rating.setRating(ratingDto.getRating());
+                userRatingRepository.save(rating);
             }
+        } else if (ratingDto.getRating() != null) {
+            UserRating newRating = new UserRating();
+            newRating.setUser(user);
+            newRating.setMovie(movie);
+            newRating.setRating(ratingDto.getRating());
+            userRatingRepository.save(newRating);
+        }
+    }
+
+    @Override
+    public Double getAverageRating(String imdbId) {
+        return movieRepository.findById(imdbId)
+                .map(movie -> movie.getRatings().stream()
+                        .mapToInt(UserRating::getRating)
+                        .average()
+                        .orElse(0.0))
+                .orElse(null);
+    }
+
+    @Override
+    public Integer getUserRating(String imdbId) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByUsername(username)
+                .flatMap(user -> movieRepository.findById(imdbId)
+                        .flatMap(movie -> userRatingRepository.findByUserAndMovie(user, movie)
+                                .map(UserRating::getRating)))
+                .orElse(null);
+    }
+
+    // Update the getSavedMovies method in MovieServiceImpl
+    @Override
+    public Page<MovieDto> getSavedMovies(String search, Pageable pageable) {
+        Page<Movie> movies;
+        if (search != null && !search.isEmpty()) {
+            movies = movieRepository.findByTitleContainingIgnoreCase(search, pageable);
+        } else {
+            movies = movieRepository.findAll(pageable);
         }
 
-        return movieList;
+        // Get current user's ratings in one query
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username).orElse(null);
+        List<UserRating> userRatings = user != null ?
+                userRatingRepository.findByUser(user) : new ArrayList<>();
+
+        Map<String, Integer> userRatingMap = userRatings.stream()
+                .collect(Collectors.toMap(
+                        ur -> ur.getMovie().getImdbId(),
+                        UserRating::getRating
+                ));
+
+        return movies.map(movie -> {
+            MovieDto dto = movieMapper.toDto(movie);
+            // Set user rating if exists
+            dto.setUserRating(userRatingMap.get(movie.getImdbId()));
+            return dto;
+        });
     }
 }
-

@@ -1,0 +1,58 @@
+<!-- src/main/resources/templates/user/movie-details.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${movie.title}"></title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header>
+    <h1 th:text="${movie.title}"></h1>
+    <a th:href="@{/user/dashboard}">Back to Dashboard</a>
+    <a th:href="@{/logout}">Logout</a>
+</header>
+
+<div class="movie-details">
+    <div class="movie-poster">
+        <img th:src="${movie.poster}" alt="Movie Poster" onerror="this.src='/images/no-poster.jpg'">
+    </div>
+
+    <div class="movie-info">
+        <p><strong>Year:</strong> <span th:text="${movie.year}"></span></p>
+        <p><strong>Rated:</strong> <span th:text="${movie.rated}"></span></p>
+        <p><strong>Released:</strong> <span th:text="${movie.released}"></span></p>
+        <p><strong>Runtime:</strong> <span th:text="${movie.runtime}"></span></p>
+        <p><strong>Genre:</strong> <span th:text="${movie.genre}"></span></p>
+        <p><strong>Director:</strong> <span th:text="${movie.director}"></span></p>
+        <p><strong>Writer:</strong> <span th:text="${movie.writer}"></span></p>
+        <p><strong>Actors:</strong> <span th:text="${movie.actors}"></span></p>
+        <p><strong>Plot:</strong> <span th:text="${movie.plot}"></span></p>
+        <p><strong>Language:</strong> <span th:text="${movie.language}"></span></p>
+        <p><strong>Country:</strong> <span th:text="${movie.country}"></span></p>
+        <p><strong>Awards:</strong> <span th:text="${movie.awards}"></span></p>
+        <p><strong>IMDb Rating:</strong> <span th:text="${movie.imdbRating}"></span></p>
+
+        <div class="user-rating" th:if="${movie.averageRating != null}">
+            <p><strong>Average User Rating:</strong> <span th:text="${movie.averageRating}"></span></p>
+        </div>
+
+        <div class="rate-movie">
+            <form th:action="@{/user/rate}" method="post">
+                <input type="hidden" name="imdbId" th:value="${movie.imdbId}">
+                <label for="rating">Your Rating:</label>
+                <select name="rating" id="rating">
+                    <option value="">-- Select --</option>
+                    <option th:each="i : ${#numbers.sequence(1, 10)}"
+                            th:value="${i}"
+                            th:selected="${movie.userRating != null && movie.userRating == i}">
+                        <span th:text="${i}"></span>
+                    </option>
+                </select>
+                <button type="submit">Submit Rating</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

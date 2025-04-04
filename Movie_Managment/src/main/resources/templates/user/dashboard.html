@@ -1,0 +1,52 @@
+<!-- src/main/resources/templates/user/dashboard.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>User Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header>
+    <h1>Movie Collection</h1>
+    <a th:href="@{/logout}">Logout</a>
+</header>
+
+<div class="search-container">
+    <form th:action="@{/user/dashboard}" method="get">
+        <input type="text" name="search" th:value="${search}" placeholder="Search saved movies...">
+        <button type="submit">Search</button>
+    </form>
+</div>
+
+<div class="movie-list">
+    <div class="movie-grid">
+        <div class="movie-card" th:each="movie : ${movies}">
+            <a th:href="@{/user/movie/{imdbId}(imdbId=${movie.imdbId})}">
+                <img th:src="${movie.poster}" alt="Movie Poster" onerror="this.src='/images/no-poster.jpg'">
+            </a>
+            <h3 th:text="${movie.title}"></h3>
+            <p th:text="${movie.year}"></p>
+            <div class="rating" th:if="${movie.averageRating != null}">
+                <span th:text="'Rating: ' + ${movie.averageRating}"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="pagination">
+            <span th:if="${currentPage > 1}">
+                <a th:href="@{/user/dashboard(search=${search}, page=${currentPage - 1}, size=${movies.size})}">Previous</a>
+            </span>
+
+        <span th:each="i : ${#numbers.sequence(1, totalPages)}">
+                <a th:if="${i != currentPage}" th:href="@{/user/dashboard(search=${search}, page=${i}, size=${movies.size})}" th:text="${i}"></a>
+                <span th:unless="${i != currentPage}" th:text="${i}"></span>
+            </span>
+
+        <span th:if="${currentPage < totalPages}">
+                <a th:href="@{/user/dashboard(search=${search}, page=${currentPage + 1}, size=${movies.size})}">Next</a>
+            </span>
+    </div>
+</div>
+</body>
+</html>
