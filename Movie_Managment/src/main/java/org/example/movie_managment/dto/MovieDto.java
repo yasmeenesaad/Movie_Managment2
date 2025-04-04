@@ -2,11 +2,13 @@ package org.example.movie_managment.dto;
 
 import lombok.Data;
 
+import java.util.List;
 @Data
 public class MovieDto {
-    private String imdbId;
+    // Basic Information
+    private String imdbID;
     private String title;
-    private Integer year;
+    private String year;
     private String rated;
     private String released;
     private String runtime;
@@ -19,23 +21,30 @@ public class MovieDto {
     private String country;
     private String awards;
     private String poster;
+
+    // Ratings
     private String imdbRating;
     private String imdbVotes;
+    private Integer metascore;
+    private List<RatingDto> externalRatings;
+
+    // Additional Metadata
     private String type;
-    // Rating fields
+    private String dvd;
+    private String boxOffice;
+    private String production;
+    private String website;
+
+    // Application-specific fields
     private Double averageRating;
     private Integer userRating;
-    // In MovieDto.java
-    public Double getAverageRating() {
-        return averageRating;
-    }
 
     public String getImdbId() {
-        return imdbId;
+        return imdbID;
     }
 
-    public void setImdbId(String imdbId) {
-        this.imdbId = imdbId;
+    public void setImdbID(String imdbID) {
+        this.imdbID = imdbID;
     }
 
     public String getTitle() {
@@ -46,11 +55,11 @@ public class MovieDto {
         this.title = title;
     }
 
-    public Integer getYear() {
+    public String getYear() {
         return year;
     }
 
-    public void setYear(Integer year) {
+    public void setYear(String year) {
         this.year = year;
     }
 
@@ -166,12 +175,64 @@ public class MovieDto {
         this.imdbVotes = imdbVotes;
     }
 
+    public Integer getMetascore() {
+        return metascore;
+    }
+
+    public void setMetascore(Integer metascore) {
+        this.metascore = metascore;
+    }
+
+    public List<RatingDto> getExternalRatings() {
+        return externalRatings;
+    }
+
+    public void setExternalRatings(List<RatingDto> externalRatings) {
+        this.externalRatings = externalRatings;
+    }
+
     public String getType() {
         return type;
     }
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getDvd() {
+        return dvd;
+    }
+
+    public void setDvd(String dvd) {
+        this.dvd = dvd;
+    }
+
+    public String getBoxOffice() {
+        return boxOffice;
+    }
+
+    public void setBoxOffice(String boxOffice) {
+        this.boxOffice = boxOffice;
+    }
+
+    public String getProduction() {
+        return production;
+    }
+
+    public void setProduction(String production) {
+        this.production = production;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
+    }
+
+    public Double getAverageRating() {
+        return averageRating;
     }
 
     public void setAverageRating(Double averageRating) {

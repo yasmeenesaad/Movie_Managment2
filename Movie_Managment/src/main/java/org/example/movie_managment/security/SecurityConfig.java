@@ -23,11 +23,13 @@ public class SecurityConfig {
                 )
                 .formLogin(form -> form
                         .loginPage("/auth/login")
-                        .defaultSuccessUrl("/user/dashboard", true)
+                        .defaultSuccessUrl("/user/dashboard")
+                        .failureUrl("/auth/login?error=true")
                         .permitAll()
                 )
                 .logout(logout -> logout
-                        .logoutSuccessUrl("/auth/login")
+                        .logoutUrl("/auth/logout")
+                        .logoutSuccessUrl("/auth/login?logout=true")
                         .permitAll()
                 );
         return http.build();

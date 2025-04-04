@@ -4,22 +4,43 @@ import lombok.Data;
 
 @Data
 public class RatingDto {
-    private String imdbId;
-    private Integer rating;
+    private String source;
+    private String value;
+    private String ImdbId;
+    private Integer Rating;
+
+    public Integer getRating() {
+        return Rating;
+    }
+
+    public void setRating(Integer ratings) {
+        Rating = ratings;
+    }
+
+    public RatingDto(String source, String value) {
+    }
 
     public String getImdbId() {
-        return imdbId;
+        return ImdbId;
     }
 
     public void setImdbId(String imdbId) {
-        this.imdbId = imdbId;
+        ImdbId = imdbId;
     }
 
-    public Integer getRating() {
-        return rating;
+    public String getSource() {
+        return source;
     }
 
-    public void setRating(Integer rating) {
-        this.rating = rating;
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 }

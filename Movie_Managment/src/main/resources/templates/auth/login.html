@@ -1,4 +1,3 @@
-<!-- src/main/resources/templates/auth/login.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -7,23 +6,36 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-<div class="auth-container">
-    <h1>Login</h1>
+<div class="login-container">
+    <h1>Movie Management System</h1>
+
+    <!-- Error Message -->
+    <div th:if="${error}" class="alert alert-error">
+        <span th:text="${error}"></span>
+    </div>
+
+    <!-- Logout Message -->
+    <div th:if="${message}" class="alert alert-success">
+        <span th:text="${message}"></span>
+    </div>
+
     <form th:action="@{/auth/login}" method="post">
         <div class="form-group">
-            <label for="username">Username:</label>
+            <label for="username">Username</label>
             <input type="text" id="username" name="username" required>
         </div>
+
         <div class="form-group">
-            <label for="password">Password:</label>
+            <label for="password">Password</label>
             <input type="password" id="password" name="password" required>
         </div>
-        <div th:if="${param.error}" class="error">
-            Invalid username or password.
-        </div>
-        <button type="submit">Login</button>
+
+        <button type="submit" class="btn-login">Login</button>
     </form>
-    <p>Don't have an account? <a th:href="@{/auth/register}">Register</a></p>
+
+    <div class="register-link">
+        Don't have an account? <a th:href="@{/auth/register}">Register here</a>
+    </div>
 </div>
 </body>
 </html>

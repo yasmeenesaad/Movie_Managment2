@@ -61,16 +61,6 @@ public class MovieServiceImpl implements MovieService {
 
     @Override
     @Transactional
-    public void saveMovie(String imdbId) {
-        if (!movieRepository.existsById(imdbId)) {
-            MovieDto movieDto = omdbService.getMovieDetails(imdbId);
-            Movie movie = movieMapper.toEntity(movieDto);
-            movieRepository.save(movie);
-        }
-    }
-
-    @Override
-    @Transactional
     public void removeMovie(String imdbId) {
         movieRepository.deleteById(imdbId);
     }
@@ -179,5 +169,14 @@ public class MovieServiceImpl implements MovieService {
             dto.setUserRating(userRatingMap.get(movie.getImdbId()));
             return dto;
         });
+    }
+    @Override
+    @Transactional
+    public void saveMovie(String imdbId) {
+        if (!movieRepository.existsById(imdbId)) {
+            MovieDto movieDto = omdbService.getMovieDetails(imdbId);
+            Movie movie = movieMapper.toEntity(movieDto);
+            movieRepository.save(movie);
+        }
     }
 }
