@@ -2,6 +2,7 @@ package org.example.movie_managment.controller;
 import org.example.movie_managment.dto.MovieDto;
 import org.example.movie_managment.dto.RatingDto;
 import org.example.movie_managment.service.MovieService;
+import org.example.movie_managment.service.impl.MovieServiceImpl;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,9 +17,9 @@ import org.springframework.ui.Model;
 @PreAuthorize("hasRole('USER')")
 public class UserController {
 
-    private final MovieService movieService;
+    private final MovieServiceImpl movieService;
 
-    public UserController(MovieService movieService) {
+    public UserController(MovieServiceImpl movieService) {
         this.movieService = movieService;
     }
 

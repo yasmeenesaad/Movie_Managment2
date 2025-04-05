@@ -3,6 +3,7 @@ package org.example.movie_managment.controller;
 
 import org.example.movie_managment.dto.MovieDto;
 import org.example.movie_managment.service.MovieService;
+import org.example.movie_managment.service.impl.MovieServiceImpl;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,9 +19,9 @@ import java.util.List;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
-    private final MovieService movieService;
+    private final MovieServiceImpl movieService;
 
-    public AdminController(MovieService movieService) {
+    public AdminController(MovieServiceImpl movieService) {
         this.movieService = movieService;
     }
 
