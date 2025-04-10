@@ -1,0 +1,24 @@
+<!-- user/dashboard/dashboard.component.html -->
+<div class="dashboard-container">
+  <mat-toolbar color="primary">
+    <span>Movie Dashboard</span>
+    <span class="spacer"></span>
+    <mat-form-field appearance="outline">
+      <mat-label>Search Movies</mat-label>
+      <input matInput [(ngModel)]="searchQuery" (keyup.enter)="searchMovies()">
+      <button matSuffix mat-icon-button (click)="searchMovies()">
+        <mat-icon>search</mat-icon>
+      </button>
+    </mat-form-field>
+  </mat-toolbar>
+
+  <div class="movie-grid">
+    <mat-card *ngFor="let movie of movies" class="movie-card" (click)="openMovieDetails(movie)">
+      <img mat-card-image [src]="movie.poster" [alt]="movie.title" onerror="this.src='assets/no-poster.jpg'">
+      <mat-card-content>
+        <h3>{{ movie.title }}</h3>
+        <p>{{ movie.year }}</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

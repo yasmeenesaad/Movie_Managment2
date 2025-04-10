@@ -97,5 +97,13 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": "1d162593-0ee1-476f-a057-77a0bb43293a"
+  },
+  "serve": {
+    "options": {
+      "proxyConfig": "proxy.conf.json"
+    }
   }
 }
